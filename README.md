@@ -64,6 +64,7 @@ Use env vars for all infra configuration. No DB/Redis credentials are hardcoded 
 - `REDIS_HOST`
 - `REDIS_PORT`
 - `SERVICE_BACKEND_ENDPOINT` (default: `https://dev.aptiview.com/healthz`)
+- `SERVICE_INTERVIEW_ENDPOINT` (default: `http://host.docker.internal:3000/healthz`)
 - `SERVICE_REDIS_ENDPOINT` (optional)
 - `SERVICE_POSTGRES_ENDPOINT` (optional)
 
@@ -182,6 +183,7 @@ Each service has `criticality`:
 Seed defaults:
 
 - `Aptiview API` -> `critical`
+- `Interview Service` -> `critical`
 - `Database Service` -> `critical`
 - `Caching Service` -> `non_critical`
 

@@ -21,10 +21,13 @@ services:
       REDIS_HOST: "${REDIS_HOST}"
       REDIS_PORT: "${REDIS_PORT:-6379}"
       SERVICE_BACKEND_ENDPOINT: "${SERVICE_BACKEND_ENDPOINT}"
+      SERVICE_INTERVIEW_ENDPOINT: "${SERVICE_INTERVIEW_ENDPOINT:-http://host.docker.internal:3000/healthz}"
       SERVICE_REDIS_ENDPOINT: "${SERVICE_REDIS_ENDPOINT:-redis://service_infra-redis-1:6379}"
       SERVICE_POSTGRES_ENDPOINT: "${SERVICE_POSTGRES_ENDPOINT}"
     volumes:
       - /aptiview/observability_db:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - service_infra_net
 
@@ -47,10 +50,13 @@ services:
       REDIS_HOST: "${REDIS_HOST}"
       REDIS_PORT: "${REDIS_PORT:-6379}"
       SERVICE_BACKEND_ENDPOINT: "${SERVICE_BACKEND_ENDPOINT}"
+      SERVICE_INTERVIEW_ENDPOINT: "${SERVICE_INTERVIEW_ENDPOINT:-http://host.docker.internal:3000/healthz}"
       SERVICE_REDIS_ENDPOINT: "${SERVICE_REDIS_ENDPOINT:-redis://service_infra-redis-1:6379}"
       SERVICE_POSTGRES_ENDPOINT: "${SERVICE_POSTGRES_ENDPOINT}"
     volumes:
       - /aptiview/observability_db:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - service_infra_net
 

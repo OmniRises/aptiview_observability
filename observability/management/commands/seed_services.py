@@ -24,6 +24,10 @@ class Command(BaseCommand):
             "SERVICE_BACKEND_ENDPOINT",
             "https://dev.aptiview.com/healthz",
         )
+        interview_endpoint = os.getenv(
+            "SERVICE_INTERVIEW_ENDPOINT",
+            "http://host.docker.internal:3000/api/health",
+        )
         redis_endpoint = os.getenv("SERVICE_REDIS_ENDPOINT") or None
         postgres_endpoint = os.getenv("SERVICE_POSTGRES_ENDPOINT") or None
 
@@ -39,6 +43,12 @@ class Command(BaseCommand):
                 "service_type": Service.SERVICE_TYPE_REDIS,
                 "endpoint": redis_endpoint,
                 "criticality": Service.CRITICALITY_NON_CRITICAL,
+            },
+            {
+                "name": "Interview Service",
+                "service_type": Service.SERVICE_TYPE_HTTP,
+                "endpoint": interview_endpoint,
+                "criticality": Service.CRITICALITY_CRITICAL,
             },
             {
                 "name": "Database Service",
