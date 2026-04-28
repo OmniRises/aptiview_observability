@@ -32,7 +32,7 @@ services:
       mkdir -p /data &&
       touch /data/db.sqlite3 &&
       ln -sf /data/db.sqlite3 /app/db.sqlite3 &&
-      until python manage.py shell -c 'from django.db import connection; c=connection.cursor(); c.execute(\"SELECT name FROM sqlite_master WHERE type=\"\"table\"\" AND name=\"\"observability_service\"\"\"); import sys; sys.exit(0 if c.fetchone() else 1)'; do
+      until python manage.py shell -c 'from django.db import connection; import sys; sys.exit(0 if \"observability_service\" in connection.introspection.table_names() else 1)'; do
         echo 'Waiting for migrations to complete...';
         sleep 2;
       done &&
