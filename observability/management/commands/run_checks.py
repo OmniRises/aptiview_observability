@@ -1,10 +1,12 @@
 import time
 
+from django.db import transaction
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from observability.checks import DBCheck, HTTPCheck, RedisCheck
 from observability.checks.message_normalizer import normalize_check_message
-from observability.models import Service, ServiceStatus
+from observability.models import Incident, Service, ServiceStatus, ServiceStatusHistory
 
 
 class Command(BaseCommand):
@@ -42,6 +44,7 @@ class Command(BaseCommand):
         while True:
             try:
                 services = Service.objects.filter(is_active=True)
+                current_outage_services = []
                 for service in services:
                     check_class = self.CHECKS_MAP.get(service.service_type)
                     if not check_class:
@@ -67,46 +70,82 @@ class Command(BaseCommand):
                         )
 
                     is_success = check_status == ServiceStatus.STATUS_OPERATIONAL
-                    service_status, _ = ServiceStatus.objects.get_or_create(
-                        service=service,
-                        defaults={
-                            "status": ServiceStatus.STATUS_OPERATIONAL,
-                            "response_time_ms": None,
-                            "message": "No checks yet",
-                            "consecutive_failures": 0,
-                            "consecutive_success": 0,
-                        },
-                    )
+                    with transaction.atomic():
+                        service_status, created = ServiceStatus.objects.select_for_update().get_or_create(
+                            service=service,
+                            defaults={
+                                "status": ServiceStatus.STATUS_OPERATIONAL,
+                                "response_time_ms": None,
+                                "message": "No checks yet",
+                                "consecutive_failures": 0,
+                                "consecutive_success": 0,
+                            },
+                        )
+                        previous_status = (
+                            ServiceStatus.STATUS_OPERATIONAL if created else service_status.status
+                        )
 
-                    consecutive_failures = (
-                        0 if is_success else service_status.consecutive_failures + 1
-                    )
-                    consecutive_success = (
-                        service_status.consecutive_success + 1 if is_success else 0
-                    )
-                    next_status = self._compute_next_status(
-                        current_status=service_status.status,
-                        is_success=is_success,
-                        consecutive_failures=consecutive_failures,
-                        consecutive_success=consecutive_success,
-                    )
+                        consecutive_failures = (
+                            0 if is_success else service_status.consecutive_failures + 1
+                        )
+                        consecutive_success = (
+                            service_status.consecutive_success + 1 if is_success else 0
+                        )
+                        next_status = self._compute_next_status(
+                            current_status=previous_status,
+                            is_success=is_success,
+                            consecutive_failures=consecutive_failures,
+                            consecutive_success=consecutive_success,
+                        )
 
-                    ServiceStatus.objects.update_or_create(
-                        service=service,
-                        defaults={
-                            "status": next_status,
-                            "response_time_ms": latency_ms,
-                            "message": message,
-                            "consecutive_failures": consecutive_failures,
-                            "consecutive_success": consecutive_success,
-                        },
-                    )
+                        service_status.status = next_status
+                        service_status.response_time_ms = latency_ms
+                        service_status.message = message
+                        service_status.consecutive_failures = consecutive_failures
+                        service_status.consecutive_success = consecutive_success
+                        service_status.save()
+
+                        ServiceStatusHistory.objects.create(
+                            service=service,
+                            status=next_status,
+                            response_time_ms=latency_ms,
+                            message=message,
+                        )
+
+                        if previous_status != ServiceStatus.STATUS_OUTAGE and next_status == ServiceStatus.STATUS_OUTAGE:
+                            open_incident = (
+                                Incident.objects.select_for_update()
+                                .filter(end_time__isnull=True)
+                                .order_by("-start_time")
+                                .first()
+                            )
+                            if open_incident is None:
+                                open_incident = Incident.objects.create()
+                            open_incident.affected_services.add(service)
+
+                    if next_status == ServiceStatus.STATUS_OUTAGE:
+                        current_outage_services.append(service.id)
 
                     self.stdout.write(
                         f"[{service.name}] raw={check_status} status={next_status} "
                         f"failures={consecutive_failures} successes={consecutive_success} "
                         f"latency_ms={latency_ms} message={message}"
                     )
+
+                with transaction.atomic():
+                    open_incident = (
+                        Incident.objects.select_for_update()
+                        .filter(end_time__isnull=True)
+                        .order_by("-start_time")
+                        .first()
+                    )
+                    if current_outage_services:
+                        if open_incident is None:
+                            open_incident = Incident.objects.create()
+                        open_incident.affected_services.add(*current_outage_services)
+                    elif open_incident is not None:
+                        open_incident.end_time = timezone.now()
+                        open_incident.save(update_fields=["end_time"])
             except Exception as exc:  # noqa: BLE001
                 self.stderr.write(self.style.ERROR(f"Checks loop iteration failed: {exc}"))
             time.sleep(60)

@@ -20,6 +20,7 @@ A production-safe Django observability service that monitors HTTP, Redis, and Po
   - DB check
 - Polling worker (`run_checks`) every 60 seconds
 - Health API: `GET /api/status/`
+- History API: `GET /api/status/history/`
 - Admin management for services and statuses
 - Seed command for initial monitored services
 
@@ -138,6 +139,16 @@ Example response:
 }
 ```
 
+Includes incident metadata:
+
+- current open incident id + start time
+- last incident end time
+
+### GET `/api/status/history/`
+
+Returns latest status timeline entries across services.
+Optional query param: `limit` (default 100, max 500).
+
 Overall status logic:
 
 - If any `critical` service is `outage` => overall is `outage`
@@ -170,6 +181,19 @@ Seed defaults:
 - `backend` -> `critical`
 - `postgres` -> `critical`
 - `redis` -> `non_critical`
+
+## Incident Tracking
+
+Incidents are modeled explicitly:
+
+- `start_time`
+- `end_time`
+- `affected_services`
+
+Lifecycle:
+
+- incident opens when any service transitions into `outage`
+- incident closes when no services remain in `outage`
 
 ## Health Check Behavior
 
@@ -204,6 +228,10 @@ Raw internal exceptions are normalized before storing in `ServiceStatus.message`
 - 2nd consecutive failure -> `outage`
 - 1st consecutive success after degradation/outage -> unchanged state
 - 2nd consecutive success -> `operational`
+
+## Concurrency Notes
+
+`run_checks` uses database transactions and row-level locking (`select_for_update`) when updating service status. This reduces race conditions for multi-worker deployments, though a dedicated distributed lock can be added later for stricter singleton scheduling.
 
 ## Useful Commands
 

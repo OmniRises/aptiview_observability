@@ -55,3 +55,34 @@ class ServiceStatus(models.Model):
 
     def __str__(self) -> str:
         return f"{self.service.name}: {self.status}"
+
+
+class ServiceStatusHistory(models.Model):
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.CASCADE,
+        related_name="status_history",
+    )
+    status = models.CharField(max_length=20, choices=ServiceStatus.STATUS_CHOICES)
+    response_time_ms = models.IntegerField(blank=True, null=True)
+    message = models.TextField(blank=True, null=True)
+    checked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-checked_at",)
+
+    def __str__(self) -> str:
+        return f"{self.service.name} @ {self.checked_at.isoformat()} = {self.status}"
+
+
+class Incident(models.Model):
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(blank=True, null=True)
+    affected_services = models.ManyToManyField(Service, related_name="incidents", blank=True)
+
+    class Meta:
+        ordering = ("-start_time",)
+
+    def __str__(self) -> str:
+        state = "open" if self.end_time is None else "closed"
+        return f"Incident #{self.pk} ({state})"
