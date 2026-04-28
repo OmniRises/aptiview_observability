@@ -20,6 +20,9 @@ services:
       DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}"
       REDIS_HOST: "${REDIS_HOST}"
       REDIS_PORT: "${REDIS_PORT:-6379}"
+      SERVICE_BACKEND_ENDPOINT: "${SERVICE_BACKEND_ENDPOINT}"
+      SERVICE_REDIS_ENDPOINT: "${SERVICE_REDIS_ENDPOINT:-redis://service_infra-redis-1:6379}"
+      SERVICE_POSTGRES_ENDPOINT: "${SERVICE_POSTGRES_ENDPOINT}"
     volumes:
       - /aptiview/observability_db:/data
     networks:
@@ -43,6 +46,9 @@ services:
       DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}"
       REDIS_HOST: "${REDIS_HOST}"
       REDIS_PORT: "${REDIS_PORT:-6379}"
+      SERVICE_BACKEND_ENDPOINT: "${SERVICE_BACKEND_ENDPOINT}"
+      SERVICE_REDIS_ENDPOINT: "${SERVICE_REDIS_ENDPOINT:-redis://service_infra-redis-1:6379}"
+      SERVICE_POSTGRES_ENDPOINT: "${SERVICE_POSTGRES_ENDPOINT}"
     volumes:
       - /aptiview/observability_db:/data
     networks:
