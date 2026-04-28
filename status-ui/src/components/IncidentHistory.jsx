@@ -1,4 +1,4 @@
-import { formatDateTime } from '../utils/formatters'
+import { formatDateTime, formatServiceName } from '../utils/formatters'
 
 export function IncidentHistory({ incidents }) {
   return (
@@ -13,7 +13,7 @@ export function IncidentHistory({ incidents }) {
               <p className="text-sm text-slate-200">Start: {formatDateTime(incident.start_time)}</p>
               <p className="text-sm text-slate-200">End: {formatDateTime(incident.end_time)}</p>
               <p className="text-sm text-slate-200">
-                Affected: {(incident.affected_services || []).join(', ') || 'Unknown'}
+                Affected: {(incident.affected_services || []).map(formatServiceName).join(', ') || 'Unknown'}
               </p>
             </li>
           ))}

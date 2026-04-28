@@ -1,4 +1,4 @@
-import { formatDateTime } from '../utils/formatters'
+import { formatDateTime, formatServiceName } from '../utils/formatters'
 
 export function IncidentCard({ incident, services }) {
   const affected = services.filter((item) => item.status === 'outage').map((item) => item.name)
@@ -16,7 +16,7 @@ export function IncidentCard({ incident, services }) {
       <h2 className="text-lg font-semibold text-red-100">🔴 Ongoing Incident</h2>
       <p className="mt-2 text-sm text-red-100">Start time: {formatDateTime(incident.open_since)}</p>
       <p className="mt-1 text-sm text-red-100">
-        Affected services: {affected.length ? affected.join(', ') : 'Investigating'}
+        Affected services: {affected.length ? affected.map(formatServiceName).join(', ') : 'Investigating'}
       </p>
       <p className="mt-1 text-sm text-red-100">Status summary: Active service outage detected</p>
     </section>

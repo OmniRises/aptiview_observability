@@ -9,6 +9,17 @@ class Command(BaseCommand):
     help = "Seed initial services for observability monitoring."
 
     def handle(self, *args, **options):
+        rename_map = {
+            "backend": "Aptiview API",
+            "redis": "Caching Service",
+            "postgres": "Database Service",
+        }
+        for old_name, new_name in rename_map.items():
+            if Service.objects.filter(name=old_name).exists() and not Service.objects.filter(name=new_name).exists():
+                legacy_service = Service.objects.get(name=old_name)
+                legacy_service.name = new_name
+                legacy_service.save(update_fields=["name"])
+
         backend_endpoint = os.getenv(
             "SERVICE_BACKEND_ENDPOINT",
             "https://dev.aptiview.com/healthz",
@@ -18,19 +29,19 @@ class Command(BaseCommand):
 
         services = [
             {
-                "name": "backend",
+                "name": "Aptiview API",
                 "service_type": Service.SERVICE_TYPE_HTTP,
                 "endpoint": backend_endpoint,
                 "criticality": Service.CRITICALITY_CRITICAL,
             },
             {
-                "name": "redis",
+                "name": "Caching Service",
                 "service_type": Service.SERVICE_TYPE_REDIS,
                 "endpoint": redis_endpoint,
                 "criticality": Service.CRITICALITY_NON_CRITICAL,
             },
             {
-                "name": "postgres",
+                "name": "Database Service",
                 "service_type": Service.SERVICE_TYPE_POSTGRES,
                 "endpoint": postgres_endpoint,
                 "criticality": Service.CRITICALITY_CRITICAL,

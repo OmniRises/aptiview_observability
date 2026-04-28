@@ -10,6 +10,13 @@ export function formatStatusLabel(status) {
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
+export function formatServiceName(name) {
+  if (name === 'backend') return 'Aptiview API'
+  if (name === 'redis') return 'Caching Service'
+  if (name === 'postgres') return 'Database Service'
+  return name
+}
+
 export function statusBadge(status) {
   if (status === 'outage') {
     return {

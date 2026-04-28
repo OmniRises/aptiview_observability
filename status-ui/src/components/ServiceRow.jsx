@@ -1,4 +1,4 @@
-import { formatStatusLabel } from '../utils/formatters'
+import { formatServiceName, formatStatusLabel } from '../utils/formatters'
 
 function statusPill(status) {
   if (status === 'outage') return 'bg-red-500/20 text-red-100 border border-red-400/40'
@@ -17,7 +17,7 @@ export function ServiceRow({ service }) {
     <li className="rounded-lg border border-[#2a4570] bg-[#0f3157] p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-base font-semibold text-slate-100">{service.name}</p>
+          <p className="text-base font-semibold text-slate-100">{formatServiceName(service.name)}</p>
           <p className="mt-1 text-sm text-slate-300">
             {service.latency != null ? `latency: ${service.latency}ms` : 'latency: N/A'}
           </p>

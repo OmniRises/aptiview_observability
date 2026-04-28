@@ -69,6 +69,7 @@ Use env vars for all infra configuration. No DB/Redis credentials are hardcoded 
 
 If `DB_NAME` is not set, app falls back to SQLite for local quick start.
 Service endpoint env vars are applied when running `seed_services`.
+The app auto-loads `.env` via `python-dotenv`, so restarting Django/worker is enough for local env values to be picked up.
 
 ## Local Setup
 
@@ -116,8 +117,8 @@ This starts:
 
 - `observability` (Django API)
 - `observability-worker` (checks loop)
-- `postgres`
-- `redis`
+- `Database Service`
+- `Caching Service`
 
 ## API
 
@@ -130,7 +131,7 @@ Example response:
   "overall_status": "operational",
   "services": [
     {
-      "name": "backend",
+      "name": "Aptiview API",
       "status": "operational",
       "latency": 120,
       "message": "OK"
@@ -178,9 +179,9 @@ Each service has `criticality`:
 
 Seed defaults:
 
-- `backend` -> `critical`
-- `postgres` -> `critical`
-- `redis` -> `non_critical`
+- `Aptiview API` -> `critical`
+- `Database Service` -> `critical`
+- `Caching Service` -> `non_critical`
 
 ## Incident Tracking
 
