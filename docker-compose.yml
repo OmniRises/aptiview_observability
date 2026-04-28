@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8081:80"
+    networks:
+      - service_infra_net
 
   observability:
     build: .
@@ -20,6 +22,8 @@ services:
       REDIS_PORT: "${REDIS_PORT:-6379}"
     volumes:
       - /aptiview/observability_db:/data
+    networks:
+      - service_infra_net
 
   observability-worker:
     build: .
@@ -31,3 +35,10 @@ services:
       REDIS_PORT: "${REDIS_PORT:-6379}"
     volumes:
       - /aptiview/observability_db:/data
+    networks:
+      - service_infra_net
+
+networks:
+  service_infra_net:
+    external: true
+    name: service_infra_default
