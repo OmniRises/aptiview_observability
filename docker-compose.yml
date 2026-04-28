@@ -1,6 +1,13 @@
 version: "3.9"
 
 services:
+  status-ui:
+    build:
+      context: ./status-ui
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
+
   observability:
     build: .
     command: sh -c "mkdir -p /data && touch /data/db.sqlite3 && ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py migrate && python manage.py runserver 0.0.0.0:8010"
