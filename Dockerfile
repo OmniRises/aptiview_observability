@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8010"]
+CMD ["sh", "-c", "python manage.py migrate && gunicorn aptiview_observability.wsgi:application --bind 0.0.0.0:8010 --workers 3 --timeout 60 --access-logfile - --error-logfile -"]

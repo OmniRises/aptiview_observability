@@ -12,7 +12,7 @@ services:
 
   observability:
     build: .
-    command: sh -c "mkdir -p /data && touch /data/db.sqlite3 && ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py migrate && python manage.py runserver 0.0.0.0:8010"
+    command: sh -c "mkdir -p /data && touch /data/db.sqlite3 && ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py migrate && gunicorn aptiview_observability.wsgi:application --bind 0.0.0.0:8010 --workers 3 --timeout 60 --access-logfile - --error-logfile -"
     ports:
       - "8010:8010"
     environment:
