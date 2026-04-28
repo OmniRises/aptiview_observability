@@ -21,12 +21,13 @@ class HTTPCheck(BaseCheck):
             if response.status_code == 200:
                 try:
                     payload = response.json()
-                    if isinstance(payload, dict) and "status" in payload:
-                        if str(payload["status"]).lower() != "ok":
-                            return "outage", latency_ms, "status!=ok"
+                    if not isinstance(payload, dict):
+                        return "outage", latency_ms, "invalid health payload"
+                    if str(payload.get("status", "")).lower() != "ok":
+                        return "outage", latency_ms, "status!=ok"
+                    return "operational", latency_ms, "OK"
                 except ValueError:
-                    pass
-                return "operational", latency_ms, "OK"
+                    return "outage", latency_ms, "invalid health response"
             if 400 <= response.status_code < 500:
                 return "degraded", latency_ms, f"HTTP {response.status_code}"
             if response.status_code >= 500:

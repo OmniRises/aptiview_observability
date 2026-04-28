@@ -204,10 +204,10 @@ Lifecycle:
 
 ### HTTP checks
 
-- `200` with valid response -> `operational`
+- `200` with JSON payload and `"status": "ok"` -> `operational`
 - `4xx` -> `degraded`
 - `5xx` / timeout / DNS failure -> `outage`
-- JSON response with `"status" != "ok"` -> failure
+- non-JSON or JSON without `"status": "ok"` -> `outage`
 
 ### Redis check
 
