@@ -122,6 +122,8 @@ This starts:
 
 ## API
 
+Rate limit: status endpoints are limited to `10 requests/minute` per client IP.
+
 ### GET `/api/status/`
 
 Example response:

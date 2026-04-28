@@ -2,9 +2,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from observability.models import Incident, Service, ServiceStatusHistory
+from observability.throttles import StatusPageRateThrottle
 
 
 class ServiceStatusView(APIView):
+    throttle_classes = [StatusPageRateThrottle]
+
     def get(self, request):
         services = Service.objects.filter(is_active=True).select_related("service_status")
         payload = []
@@ -56,6 +59,8 @@ class ServiceStatusView(APIView):
 
 
 class ServiceStatusHistoryView(APIView):
+    throttle_classes = [StatusPageRateThrottle]
+
     def get(self, request):
         limit = int(request.query_params.get("limit", 100))
         history = ServiceStatusHistory.objects.select_related("service")[: max(1, min(limit, 500))]

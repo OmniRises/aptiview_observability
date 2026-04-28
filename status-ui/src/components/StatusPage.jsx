@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { getHistory, getStatus } from '../api/statusApi'
+import { ApiError, getHistory, getStatus } from '../api/statusApi'
 import { deriveIncidentHistory } from '../utils/incidentUtils'
 import { IncidentCard } from './IncidentCard'
 import { IncidentHistory } from './IncidentHistory'
@@ -14,6 +14,7 @@ export function StatusPage() {
   const [historyData, setHistoryData] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const [rateLimited, setRateLimited] = useState(false)
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
 
   useEffect(() => {
@@ -27,14 +28,22 @@ export function StatusPage() {
         setLastUpdatedAt(new Date().toISOString())
         setHasError(false)
       } catch (error) {
-        if (!cancelled) setHasError(true)
+        if (!cancelled) {
+          if (error instanceof ApiError && error.status === 429) {
+            setRateLimited(true)
+            setHasError(false)
+          } else {
+            setHasError(true)
+            setRateLimited(false)
+          }
+        }
       } finally {
         if (!cancelled) setIsLoading(false)
       }
     }
 
     loadStatus()
-    const intervalId = setInterval(loadStatus, 10000)
+    const intervalId = setInterval(loadStatus, 30000)
 
     return () => {
       cancelled = true
@@ -66,6 +75,14 @@ export function StatusPage() {
 
   if (isLoading) {
     return <main className="mx-auto max-w-6xl p-6 text-slate-300">Loading status...</main>
+  }
+
+  if (rateLimited) {
+    return (
+      <main className="mx-auto max-w-6xl p-6 text-amber-200">
+        Rate limit reached. Please wait a minute and refresh.
+      </main>
+    )
   }
 
   if (hasError || !statusData) {

@@ -144,7 +144,10 @@ STATIC_URL = 'static/'
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
-    ]
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "status_page": "50/min",
+    },
 }
 
 # Default primary key field type

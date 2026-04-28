@@ -28,6 +28,20 @@ export function UptimeStrip({ events }) {
           />
         ))}
       </div>
+      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-300">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+          <span>Operational</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+          <span>Degraded</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+          <span>Outage</span>
+        </div>
+      </div>
     </section>
   )
 }
