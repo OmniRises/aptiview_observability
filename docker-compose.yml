@@ -3,9 +3,9 @@ version: "3.9"
 services:
   observability:
     build: .
-    command: sh -c "mkdir -p /data && touch /data/db.sqlite3 && ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "mkdir -p /data && touch /data/db.sqlite3 && ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py migrate && python manage.py runserver 0.0.0.0:8010"
     ports:
-      - "8000:8000"
+      - "8010:8010"
     environment:
       DJANGO_DEBUG: "${DJANGO_DEBUG:-False}"
       DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}"
