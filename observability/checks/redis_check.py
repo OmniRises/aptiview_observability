@@ -4,6 +4,7 @@ import time
 import redis
 
 from .base import BaseCheck
+from .message_normalizer import normalize_check_message
 
 
 class RedisCheck(BaseCheck):
@@ -17,4 +18,4 @@ class RedisCheck(BaseCheck):
             latency_ms = int((time.perf_counter() - start) * 1000)
             return "operational", latency_ms, "Redis ping OK"
         except Exception as exc:  # noqa: BLE001
-            return "outage", None, str(exc)
+            return "outage", None, normalize_check_message(str(exc))

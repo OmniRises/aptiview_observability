@@ -10,10 +10,21 @@ class Service(models.Model):
         (SERVICE_TYPE_REDIS, "Redis"),
         (SERVICE_TYPE_POSTGRES, "Postgres"),
     )
+    CRITICALITY_CRITICAL = "critical"
+    CRITICALITY_NON_CRITICAL = "non_critical"
+    CRITICALITY_CHOICES = (
+        (CRITICALITY_CRITICAL, "Critical"),
+        (CRITICALITY_NON_CRITICAL, "Non-Critical"),
+    )
 
     name = models.CharField(max_length=255, unique=True)
     endpoint = models.URLField(blank=True, null=True)
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPE_CHOICES)
+    criticality = models.CharField(
+        max_length=20,
+        choices=CRITICALITY_CHOICES,
+        default=CRITICALITY_CRITICAL,
+    )
     is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:

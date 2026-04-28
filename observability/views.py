@@ -8,26 +8,33 @@ class ServiceStatusView(APIView):
     def get(self, request):
         services = Service.objects.filter(is_active=True).select_related("service_status")
         payload = []
-        statuses = []
+        critical_statuses = []
+        non_critical_statuses = []
 
         for service in services:
             status_obj = getattr(service, "service_status", None)
             status = status_obj.status if status_obj else "outage"
             message = status_obj.message if status_obj else "No status yet"
             latency = status_obj.response_time_ms if status_obj else None
-            statuses.append(status)
+            if service.criticality == Service.CRITICALITY_CRITICAL:
+                critical_statuses.append(status)
+            else:
+                non_critical_statuses.append(status)
             payload.append(
                 {
                     "name": service.name,
                     "status": status,
                     "latency": latency,
                     "message": message,
+                    "criticality": service.criticality,
                 }
             )
 
-        if "outage" in statuses:
+        if "outage" in critical_statuses:
             overall_status = "outage"
-        elif "degraded" in statuses:
+        elif "degraded" in critical_statuses:
+            overall_status = "degraded"
+        elif "outage" in non_critical_statuses or "degraded" in non_critical_statuses:
             overall_status = "degraded"
         else:
             overall_status = "operational"

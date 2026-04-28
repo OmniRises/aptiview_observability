@@ -140,8 +140,9 @@ Example response:
 
 Overall status logic:
 
-- If any service is `outage` => overall is `outage`
+- If any `critical` service is `outage` => overall is `outage`
 - Else if any service is `degraded` => overall is `degraded`
+- Else if any `non_critical` service is `outage` => overall is `degraded`
 - Else => `operational`
 
 ## Status Semantics
@@ -156,6 +157,19 @@ Hysteresis is used to prevent flapping:
 
 - `outage` is set only after multiple consecutive failures
 - Recovery to `operational` requires multiple consecutive successes
+
+## Service Criticality
+
+Each service has `criticality`:
+
+- `critical`
+- `non_critical`
+
+Seed defaults:
+
+- `backend` -> `critical`
+- `postgres` -> `critical`
+- `redis` -> `non_critical`
 
 ## Health Check Behavior
 
@@ -175,6 +189,14 @@ Hysteresis is used to prevent flapping:
 
 - Successful `SELECT 1` -> `operational`
 - Failure -> `outage`
+
+## Error Message Normalization
+
+Raw internal exceptions are normalized before storing in `ServiceStatus.message`:
+
+- DNS resolution errors -> `DNS resolution failed`
+- Timeout errors -> `Request timed out`
+- Connection errors -> `Connection failed`
 
 ## Stability Mechanism (Hysteresis)
 

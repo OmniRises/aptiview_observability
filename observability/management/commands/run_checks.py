@@ -3,6 +3,7 @@ import time
 from django.core.management.base import BaseCommand
 
 from observability.checks import DBCheck, HTTPCheck, RedisCheck
+from observability.checks.message_normalizer import normalize_check_message
 from observability.models import Service, ServiceStatus
 
 
@@ -59,7 +60,11 @@ class Command(BaseCommand):
                         )
                         check_status, latency_ms, message = check.run()
                     except Exception as exc:  # noqa: BLE001
-                        check_status, latency_ms, message = "outage", None, str(exc)
+                        check_status, latency_ms, message = (
+                            "outage",
+                            None,
+                            normalize_check_message(str(exc)),
+                        )
 
                     is_success = check_status == ServiceStatus.STATUS_OPERATIONAL
                     service_status, _ = ServiceStatus.objects.get_or_create(

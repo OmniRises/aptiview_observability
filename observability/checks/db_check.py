@@ -3,6 +3,7 @@ import time
 from django.db import connection
 
 from .base import BaseCheck
+from .message_normalizer import normalize_check_message
 
 
 class DBCheck(BaseCheck):
@@ -15,4 +16,4 @@ class DBCheck(BaseCheck):
             latency_ms = int((time.perf_counter() - start) * 1000)
             return "operational", latency_ms, "DB query OK"
         except Exception as exc:  # noqa: BLE001
-            return "outage", None, str(exc)
+            return "outage", None, normalize_check_message(str(exc))

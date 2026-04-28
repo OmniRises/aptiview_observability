@@ -5,10 +5,10 @@ from .models import Service, ServiceStatus
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ("name", "service_type", "endpoint", "is_active")
-    list_filter = ("service_type", "is_active")
+    list_display = ("name", "service_type", "criticality", "endpoint", "is_active")
+    list_filter = ("service_type", "criticality", "is_active")
     search_fields = ("name", "endpoint")
-    fields = ("name", "endpoint", "service_type", "is_active")
+    fields = ("name", "endpoint", "service_type", "criticality", "is_active")
 
 
 @admin.register(ServiceStatus)

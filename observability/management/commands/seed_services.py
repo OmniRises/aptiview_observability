@@ -21,16 +21,19 @@ class Command(BaseCommand):
                 "name": "backend",
                 "service_type": Service.SERVICE_TYPE_HTTP,
                 "endpoint": backend_endpoint,
+                "criticality": Service.CRITICALITY_CRITICAL,
             },
             {
                 "name": "redis",
                 "service_type": Service.SERVICE_TYPE_REDIS,
                 "endpoint": redis_endpoint,
+                "criticality": Service.CRITICALITY_NON_CRITICAL,
             },
             {
                 "name": "postgres",
                 "service_type": Service.SERVICE_TYPE_POSTGRES,
                 "endpoint": postgres_endpoint,
+                "criticality": Service.CRITICALITY_CRITICAL,
             },
         ]
         for payload in services:
@@ -39,6 +42,7 @@ class Command(BaseCommand):
                 defaults={
                     "service_type": payload["service_type"],
                     "endpoint": payload["endpoint"],
+                    "criticality": payload["criticality"],
                     "is_active": True,
                 },
             )
