@@ -23,7 +23,7 @@ services:
 
   observability-worker:
     build: .
-    command: sh -c "mkdir -p /data && touch /data/db.sqlite3 && ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py migrate && python manage.py run_checks"
+    command: sh -c "mkdir -p /data && touch /data/db.sqlite3 && ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py run_checks"
     environment:
       DJANGO_DEBUG: "${DJANGO_DEBUG:-False}"
       DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}"
