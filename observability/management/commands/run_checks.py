@@ -58,7 +58,11 @@ class Command(BaseCommand):
                     try:
                         check = (
                             check_class(service.endpoint)
-                            if service.service_type == Service.SERVICE_TYPE_HTTP
+                            if service.service_type
+                            in (
+                                Service.SERVICE_TYPE_HTTP,
+                                Service.SERVICE_TYPE_POSTGRES,
+                            )
                             else check_class()
                         )
                         check_status, latency_ms, message = check.run()
