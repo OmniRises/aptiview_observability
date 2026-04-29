@@ -116,10 +116,31 @@ docker compose up --build
 
 This starts:
 
-- `observability` (Django API)
-- `observability-worker` (checks loop)
-- `Database Service`
-- `Caching Service`
+- `observability` — Django API (Gunicorn), SQLite data under a host-mounted volume (`/data` in the container)
+- `observability-worker` — polling loop (`run_checks`)
+- `status-ui` — static status page (Nginx)
+
+Redis and Postgres used for **health checks** are expected to run elsewhere (for example on the same Docker network as your app stack), not as services in this compose file.
+
+### Seeding and inspecting monitored endpoints (Docker)
+
+In production, the observability app keeps its **own** SQLite database on a persistent host path, mounted at `/data` in the container. Django is configured to use `db.sqlite3` under the app directory (`/app`), so running containers create a symlink: `/app/db.sqlite3` → `/data/db.sqlite3`.
+
+One-off `docker compose run` containers do **not** run that startup script, so you must create the same symlink before `manage.py` commands, or they will use an empty ephemeral database and you will not see the services the API/worker use.
+
+**Apply `SERVICE_*` env vars to the registry** — updates or inserts `Service` rows (names, types, endpoints) from your environment (compose interpolation + `.env`). Run after changing endpoints or on a fresh volume so `/api/status/` is not empty:
+
+```bash
+docker compose run --rm observability sh -c "ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py seed_services"
+```
+
+**Print stored service names and endpoints** — confirms what is actually persisted (not just what is in `.env`):
+
+```bash
+docker compose run --rm observability sh -c "ln -sf /data/db.sqlite3 /app/db.sqlite3 && python manage.py shell -c \"from observability.models import Service; print(list(Service.objects.values_list('name','endpoint')))\""
+```
+
+Ensure the `observability` service in `docker-compose.yml` passes the same `SERVICE_*` and `REDIS_*` variables you rely on for `seed_services`, then restart the worker if you changed monitored URLs so checks use the new values.
 
 ## API
 
@@ -216,6 +237,7 @@ Lifecycle:
 
 ### Postgres check
 
+- Connects to the **monitored** database URL on the `Service` record (from `SERVICE_POSTGRES_ENDPOINT` when you run `seed_services`), not Django’s own SQLite DB
 - Successful `SELECT 1` -> `operational`
 - Failure -> `outage`
 
