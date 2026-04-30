@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import logo from '../assets/aptiview-logo.png'
 import { ApiError, getHistory, getStatus } from '../api/statusApi'
 import { deriveIncidentHistory } from '../utils/incidentUtils'
 import { IncidentCard } from './IncidentCard'
@@ -91,12 +92,32 @@ export function StatusPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-6">
-      <header className="flex items-center justify-between border-b border-slate-700 pb-4">
-        <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-cyan-300">Aptiview Status</p>
-          <h1 className="text-xl font-semibold text-slate-100">Live platform health</h1>
+      <header className="group flex items-center justify-between border-b border-white/10 pb-5 mb-8 transition-all duration-500 hover:border-white/20">
+        <div className="flex items-center gap-4">
+          <div className="bg-white/95 p-2 rounded-xl shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-1">
+            <img
+              src={logo}
+              alt="Aptiview Logo"
+              className="h-8 w-auto"
+              onError={(e) => e.target.style.display = 'none'}
+            />
+          </div>
+          <div className="h-8 w-px bg-white/20 self-center" />
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-400 group-hover:text-cyan-300 transition-colors">Aptiview Status</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight group-hover:translate-x-1 transition-transform duration-500">Live platform health</h1>
+          </div>
         </div>
-        <p className="text-sm text-slate-300">Status and incident communication</p>
+        <div className="text-right hidden md:block">
+          <p className="text-sm font-bold text-slate-400 group-hover:text-slate-200 transition-colors">Status and incident communication</p>
+          <div className="mt-1.5 flex items-center justify-end gap-2">
+            <div className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400">Live Monitoring</span>
+          </div>
+        </div>
       </header>
       <StatusBanner overallStatus={statusData.overall_status} lastUpdatedAt={lastUpdatedAt} />
       <UptimeStrip events={historyData} />
